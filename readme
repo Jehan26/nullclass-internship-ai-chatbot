@@ -1,27 +1,30 @@
-# NullClass Internship - Chatbot Enhancement Project
+# Customer Service Chatbot
 
-This repository contains the work completed as part of the NullClass Internship from **26 March 2025 to 26 May 2025** by **Jehan B**.
+## Overview
+This project is a comprehensive Customer Service Chatbot designed to assist users by answering queries, providing relevant information from a knowledge base, and offering personalized support through natural language processing techniques. The chatbot integrates multiple AI-powered modules including sentiment analysis, intent classification, named entity recognition, and knowledge retrieval to deliver an efficient and interactive user experience.
 
-## 📌 Project Overview
+## Features
+- **Sentiment Analysis:** Detects the emotional tone of user messages to tailor responses accordingly.
+- **Intent Classification:** Understands user intentions to route queries correctly.
+- **Named Entity Recognition (NER):** Extracts important entities such as dates, locations, and product names from text.
+- **Knowledge Base Retrieval:** Searches and retrieves relevant answers from a curated knowledge base using similarity matching.
+- **FAQ Matching:** Provides quick answers to frequently asked questions via rule-based matching.
+- **Chatbot Response Generation:** Generates contextual responses based on user input and recognized intents.
+- **User Feedback Analysis:** Collects and processes user feedback to improve chatbot performance.
+- **Topic Modeling:** Identifies main topics in conversations for better understanding and analytics.
+- **Chat History Logging:** Stores conversation history for audit and improvement purposes.
 
-The goal of this project is to enhance a chatbot system by implementing the following five key features:
+## Technologies Used
+- Python 3.x
+- [TextBlob](https://textblob.readthedocs.io/en/dev/) for Sentiment Analysis
+- [spaCy](https://spacy.io/) for Named Entity Recognition
+- [scikit-learn](https://scikit-learn.org/) for Intent Classification and Knowledge Retrieval
+- [gensim](https://radimrehurek.com/gensim/) for Topic Modeling
+- JSON for chat logging and data storage
 
-1. **📊 User Analytics Dashboard**  
-   Track user interactions, most queried topics, and satisfaction ratings.
+## Installation
 
-2. **🧠 Dynamic Knowledge Base Update**  
-   Automatically update the chatbot's vector database with new information from specified sources.
-
-3. **🖼️ Multi-Modal Chatbot**  
-   Integrate text and image handling using Google PaLM and Gemini AI capabilities.
-
-4. **😊 Sentiment-Aware Interaction**  
-   Use sentiment analysis to adjust responses based on user emotion.
-
-5. **🌐 Multilingual Support**  
-   Add support for Tamil, Hindi, and French with auto-detection and culturally appropriate replies.
-
----
-
-## 📂 Project Structure
-
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/customer-service-chatbot.git
+   cd customer-service-chatbot

@@ -1,0 +1,21 @@
+from googletrans import Translator
+translator = Translator()
+
+responses = {
+    'en': "Hello! How can I help you?",
+    'fr': "Bonjour! Comment puis-je vous aider?",
+    'ta': "வணக்கம்! நான் எப்படி உதவ முடியும்?"
+}
+
+def detect_language(text):
+    return translator.detect(text).lang
+
+def translate_response(lang):
+    return responses.get(lang, responses['en'])
+
+while True:
+    text = input("You: ")
+    if text.lower() == "exit":
+        break
+    lang = detect_language(text)
+    print("Bot:", translate_response(lang))

@@ -1,0 +1,36 @@
+import nltk
+import random
+from textblob import TextBlob
+
+nltk.download('punkt')
+
+# Sample responses
+positive_responses = ["I'm glad to hear that! 😊", "That's awesome!", "Yay! Keep it up!"]
+negative_responses = ["I'm here for you. 🙁", "Oh no, want to talk about it?", "I understand. I'm here to help."]
+neutral_responses = ["Okay! What else can I help you with?", "Got it. Thanks for sharing!", "Alright, let's move on."]
+
+def detect_sentiment(text):
+    blob = TextBlob(text)
+    polarity = blob.sentiment.polarity
+    if polarity > 0.1:
+        return "positive"
+    elif polarity < -0.1:
+        return "negative"
+    else:
+        return "neutral"
+
+def respond(text):
+    sentiment = detect_sentiment(text)
+    if sentiment == "positive":
+        return random.choice(positive_responses)
+    elif sentiment == "negative":
+        return random.choice(negative_responses)
+    else:
+        return random.choice(neutral_responses)
+
+# Example
+while True:
+    user_input = input("You: ")
+    if user_input.lower() == "exit":
+        break
+    print("Bot:", respond(user_input))

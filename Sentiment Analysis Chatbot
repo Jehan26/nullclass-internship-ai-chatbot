@@ -1,36 +1,242 @@
-import nltk
-import random
-from textblob import TextBlob
+import sqlite3
+from flask import Flask, request, jsonify, render_template
+from collections import Counter
+import datetime
 
-nltk.download('punkt')
+app = Flask(__name__)
 
-# Sample responses
-positive_responses = ["I'm glad to hear that! 😊", "That's awesome!", "Yay! Keep it up!"]
-negative_responses = ["I'm here for you. 🙁", "Oh no, want to talk about it?", "I understand. I'm here to help."]
-neutral_responses = ["Okay! What else can I help you with?", "Got it. Thanks for sharing!", "Alright, let's move on."]
+# Initialize SQLite database
+def init_db():
+    conn = sqlite3.connect('chatbot_analytics.db')
+    c = conn.cursor()
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS queries (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT,
+            query TEXT,
+            topic TEXT,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS feedback (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT,
+            rating INTEGER,  -- rating 1 to 5
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    conn.commit()
+    conn.close()
 
-def detect_sentiment(text):
-    blob = TextBlob(text)
-    polarity = blob.sentiment.polarity
-    if polarity > 0.1:
-        return "positive"
-    elif polarity < -0.1:
-        return "negative"
-    else:
-        return "neutral"
+init_db()
 
-def respond(text):
-    sentiment = detect_sentiment(text)
-    if sentiment == "positive":
-        return random.choice(positive_responses)
-    elif sentiment == "negative":
-        return random.choice(negative_responses)
-    else:
-        return random.choice(neutral_responses)
+# Utility function: categorize query into a topic (basic keyword matching)
+def categorize_topic(query):
+    topics = {
+        "weather": ["weather", "rain", "temperature", "forecast"],
+        "sports": ["game", "score", "team", "player", "match"],
+        "technology": ["AI", "machine learning", "computer", "software", "hardware"],
+        "food": ["recipe", "restaurant", "cook", "meal", "food"],
+        "travel": ["flight", "hotel", "trip", "travel", "destination"]
+    }
+    query_lower = query.lower()
+    for topic, keywords in topics.items():
+        for kw in keywords:
+            if kw in query_lower:
+                return topic
+    return "general"
 
-# Example
-while True:
-    user_input = input("You: ")
-    if user_input.lower() == "exit":
-        break
-    print("Bot:", respond(user_input))
+# API to log a user query
+@app.route('/log_query', methods=['POST'])
+def log_query():
+    data = request.json
+    user_id = data.get('user_id', 'anonymous')
+    query = data.get('query', '')
+    topic = categorize_topic(query)
+
+    conn = sqlite3.connect('chatbot_analytics.db')
+    c = conn.cursor()
+    c.execute('INSERT INTO queries (user_id, query, topic) VALUES (?, ?, ?)', (user_id, query, topic))
+    conn.commit()
+    conn.close()
+
+    return jsonify({"status": "success", "topic": topic})
+
+# API to log user satisfaction rating
+@app.route('/log_feedback', methods=['POST'])
+def log_feedback():
+    data = request.json
+    user_id = data.get('user_id', 'anonymous')
+    rating = data.get('rating', 3)  # Default neutral rating
+
+    if not (1 <= rating <= 5):
+        return jsonify({"status": "error", "message": "Rating must be between 1 and 5"}), 400
+
+    conn = sqlite3.connect('chatbot_analytics.db')
+    c = conn.cursor()
+    c.execute('INSERT INTO feedback (user_id, rating) VALUES (?, ?)', (user_id, rating))
+    conn.commit()
+    conn.close()
+
+    return jsonify({"status": "success"})
+
+# Dashboard route - display analytics summary
+@app.route('/')
+def dashboard():
+    conn = sqlite3.connect('chatbot_analytics.db')
+    c = conn.cursor()
+
+    # Total queries
+    c.execute('SELECT COUNT(*) FROM queries')
+    total_queries = c.fetchone()[0]
+
+    # Most common topics
+    c.execute('SELECT topic FROM queries')
+    topics = [row[0] for row in c.fetchall()]
+    topic_counts = Counter(topics)
+    top_topics = topic_counts.most_common(5)
+
+    # Average satisfaction rating
+    c.execute('SELECT AVG(rating) FROM feedback')
+    avg_rating = c.fetchone()[0]
+    avg_rating = round(avg_rating, 2) if avg_rating else 'No ratings yet'
+
+    # Ratings distribution
+    c.execute('SELECT rating, COUNT(*) FROM feedback GROUP BY rating')
+    ratings_data = c.fetchall()
+    rating_dist = {r: 0 for r in range(1, 6)}
+    for r, count in ratings_data:
+        rating_dist[r] = count
+
+    conn.close()
+
+    return render_template('dashboard.html',
+                           total_queries=total_queries,
+                           top_topics=top_topics,
+                           avg_rating=avg_rating,
+                           rating_dist=rating_dist)
+
+if __name__ == '__main__':
+    app.run(debug=True)
+import sqlite3
+from flask import Flask, request, jsonify, render_template
+from collections import Counter
+import datetime
+
+app = Flask(__name__)
+
+# Initialize SQLite database
+def init_db():
+    conn = sqlite3.connect('chatbot_analytics.db')
+    c = conn.cursor()
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS queries (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT,
+            query TEXT,
+            topic TEXT,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS feedback (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT,
+            rating INTEGER,  -- rating 1 to 5
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+init_db()
+
+# Utility function: categorize query into a topic (basic keyword matching)
+def categorize_topic(query):
+    topics = {
+        "weather": ["weather", "rain", "temperature", "forecast"],
+        "sports": ["game", "score", "team", "player", "match"],
+        "technology": ["AI", "machine learning", "computer", "software", "hardware"],
+        "food": ["recipe", "restaurant", "cook", "meal", "food"],
+        "travel": ["flight", "hotel", "trip", "travel", "destination"]
+    }
+    query_lower = query.lower()
+    for topic, keywords in topics.items():
+        for kw in keywords:
+            if kw in query_lower:
+                return topic
+    return "general"
+
+# API to log a user query
+@app.route('/log_query', methods=['POST'])
+def log_query():
+    data = request.json
+    user_id = data.get('user_id', 'anonymous')
+    query = data.get('query', '')
+    topic = categorize_topic(query)
+
+    conn = sqlite3.connect('chatbot_analytics.db')
+    c = conn.cursor()
+    c.execute('INSERT INTO queries (user_id, query, topic) VALUES (?, ?, ?)', (user_id, query, topic))
+    conn.commit()
+    conn.close()
+
+    return jsonify({"status": "success", "topic": topic})
+
+# API to log user satisfaction rating
+@app.route('/log_feedback', methods=['POST'])
+def log_feedback():
+    data = request.json
+    user_id = data.get('user_id', 'anonymous')
+    rating = data.get('rating', 3)  # Default neutral rating
+
+    if not (1 <= rating <= 5):
+        return jsonify({"status": "error", "message": "Rating must be between 1 and 5"}), 400
+
+    conn = sqlite3.connect('chatbot_analytics.db')
+    c = conn.cursor()
+    c.execute('INSERT INTO feedback (user_id, rating) VALUES (?, ?)', (user_id, rating))
+    conn.commit()
+    conn.close()
+
+    return jsonify({"status": "success"})
+
+# Dashboard route - display analytics summary
+@app.route('/')
+def dashboard():
+    conn = sqlite3.connect('chatbot_analytics.db')
+    c = conn.cursor()
+
+    # Total queries
+    c.execute('SELECT COUNT(*) FROM queries')
+    total_queries = c.fetchone()[0]
+
+    # Most common topics
+    c.execute('SELECT topic FROM queries')
+    topics = [row[0] for row in c.fetchall()]
+    topic_counts = Counter(topics)
+    top_topics = topic_counts.most_common(5)
+
+    # Average satisfaction rating
+    c.execute('SELECT AVG(rating) FROM feedback')
+    avg_rating = c.fetchone()[0]
+    avg_rating = round(avg_rating, 2) if avg_rating else 'No ratings yet'
+
+    # Ratings distribution
+    c.execute('SELECT rating, COUNT(*) FROM feedback GROUP BY rating')
+    ratings_data = c.fetchall()
+    rating_dist = {r: 0 for r in range(1, 6)}
+    for r, count in ratings_data:
+        rating_dist[r] = count
+
+    conn.close()
+
+    return render_template('dashboard.html',
+                           total_queries=total_queries,
+                           top_topics=top_topics,
+                           avg_rating=avg_rating,
+                           rating_dist=rating_dist)
+
+if __name__ == '__main__':
+    app.run(debug=True)

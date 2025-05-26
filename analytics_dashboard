@@ -1,0 +1,25 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Simulated chat logs
+data = {
+    'user_id': [1, 1, 2, 3, 1, 2, 3, 4],
+    'query': ["Hi", "Weather?", "How are you?", "Joke", "Thanks", "Bye", "News", "Time"],
+    'topic': ["greeting", "weather", "greeting", "fun", "gratitude", "bye", "news", "time"],
+    'feedback': [5, 4, 5, 3, 5, 4, 5, 3]
+}
+
+# Create dataframe
+log_df = pd.DataFrame(data)
+
+# Count queries per topic
+topic_counts = log_df['topic'].value_counts()
+topic_counts.plot(kind='bar', title='Most Common Topics', color='skyblue')
+plt.xlabel("Topics")
+plt.ylabel("Count")
+plt.show()
+
+# Satisfaction average
+avg_feedback = log_df['feedback'].mean()
+print("Average Satisfaction:", round(avg_feedback, 2))

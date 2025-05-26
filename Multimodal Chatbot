@@ -1,0 +1,18 @@
+rom PIL import Image
+import io
+import requests
+from transformers import BlipProcessor, BlipForConditionalGeneration
+import torch
+
+processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
+model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
+
+# Example Image
+img_url = 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Puppy_on_Halong_Bay.jpg/640px-Puppy_on_Halong_Bay.jpg'
+image = Image.open(requests.get(img_url, stream=True).raw).convert('RGB')
+
+# Generate caption
+inputs = processor(image, return_tensors="pt")
+out = model.generate(**inputs)
+caption = processor.decode(out[0], skip_special_tokens=True)
+print("Caption:", caption)

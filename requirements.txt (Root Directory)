@@ -1,0 +1,12 @@
+nltk
+textblob
+matplotlib
+seaborn
+pandas
+googletrans==4.0.0-rc1
+transformers
+beautifulsoup4
+requests
+faiss-cpu
+Pillow
+torch

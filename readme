@@ -1,0 +1,27 @@
+# NullClass Internship - Chatbot Enhancement Project
+
+This repository contains the work completed as part of the NullClass Internship from **26 March 2025 to 26 May 2025** by **Jehan B**.
+
+## 📌 Project Overview
+
+The goal of this project is to enhance a chatbot system by implementing the following five key features:
+
+1. **📊 User Analytics Dashboard**  
+   Track user interactions, most queried topics, and satisfaction ratings.
+
+2. **🧠 Dynamic Knowledge Base Update**  
+   Automatically update the chatbot's vector database with new information from specified sources.
+
+3. **🖼️ Multi-Modal Chatbot**  
+   Integrate text and image handling using Google PaLM and Gemini AI capabilities.
+
+4. **😊 Sentiment-Aware Interaction**  
+   Use sentiment analysis to adjust responses based on user emotion.
+
+5. **🌐 Multilingual Support**  
+   Add support for Tamil, Hindi, and French with auto-detection and culturally appropriate replies.
+
+---
+
+## 📂 Project Structure
+
